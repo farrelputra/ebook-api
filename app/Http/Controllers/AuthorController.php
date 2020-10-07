@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Author;
+use JWTAuth;
 
 class AuthorController extends Controller
 {
+
     /**
      * Display a listing of the resource.
      *
@@ -15,17 +17,16 @@ class AuthorController extends Controller
     public function index()
     {
         //
-        return Author::get();
+        $author = Author::all();
+        if($author && $author->count() > 0){
+            return response(['message'=> 'Show data success.', 'data'=> $author], 200);
+        }else{
+            return response(['message'=> 'Data not found.', 'data'=> null], 404);
+        }
     }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+    
+    public function __construct() {
+        $this->middleware('auth:api');
     }
 
     /**
@@ -37,14 +38,15 @@ class AuthorController extends Controller
     public function store(Request $request)
     {
         //
-        return Author::create([
-            "name" => $request->input('name'),
-            "date_of_birth" => $request->input('date_of_birth'),
-            "place_of_birth" => $request->input('place_of_birth'),
-            "gender" => $request->input('gender'),
-            "email" => $request->input('email'),
-            "hp" => $request->input('hp')
-        ]);
+        $author = Author::create ([
+            "name" => $request->name,
+            "date_of_birth" => $request->date_of_birth,
+            "place_of_birth" => $request->place_of_birth,
+            "gender" => $request->gender,
+            "email" => $request->email,
+            "hp" => $request->hp
+     ]);
+        return response(['message'=> 'Create data success.', 'data'=> $author], 201);    
     }
 
     /**
@@ -56,18 +58,12 @@ class AuthorController extends Controller
     public function show($id)
     {
         //
-        return Author::find($id);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
+        $author = Author::find($id);
+        if($author && $author->count() > 0){
+            return response(['message'=> 'Show data success.', 'data'=> $author], 200);
+        }else{
+            return response(['message'=> 'Data not found.', 'data'=> null], 404);
+        }
     }
 
     /**
@@ -79,14 +75,20 @@ class AuthorController extends Controller
      */
     public function update(Request $request, $id)
     {
-        return Author::find($id)->update([
-            "name" => $request->input('name'),
-            "date_of_birth" => $request->input('date_of_birth'),
-            "place_of_birth" => $request->input('place_of_birth'),
-            "gender" => $request->input('gender'),
-            "email" => $request->input('email'),
-            "hp" => $request->input('hp')
-        ]);
+        //
+        $author = Author::find($id);
+        if($author){
+            $author ->name = $request->name;
+            $author ->date_of_birth = $request->date_of_birth;
+            $author ->place_of_birth = $request->place_of_birth;
+            $author ->gender = $request->gender;
+            $author ->email = $request->email;
+            $author ->hp = $request->hp;
+            $author->save();
+            return response(['message'=> 'Update data success.', 'data'=> $author], 200);
+        }else{
+            return response(['message'=> 'Update data failed.', 'data'=> null], 406);
+        }
     }
 
     /**
@@ -97,6 +99,13 @@ class AuthorController extends Controller
      */
     public function destroy($id)
     {
-        return Author::destroy($id);
-    }
+        $author = Author::find($id);
+        if($author){
+            $author->delete();
+            return response([], 204);
+        }else{
+            return response(['message'=> 'Remove data failed.', 'data'=> null], 406);
+            
+        }
+    }    
 }
